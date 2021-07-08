@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date:    19:19:32 07/07/2021 
+// Create Date:    11:17:51 07/08/2021 
 // Design Name: 
-// Module Name:    memory 
+// Module Name:    controller 
 // Project Name: 
 // Target Devices: 
 // Tool versions: 
@@ -18,8 +18,8 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module memory(
+module controller(
     );
-    
+
 
 endmodule

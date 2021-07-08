@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date:    19:19:32 07/07/2021 
+// Create Date:    11:18:19 07/08/2021 
 // Design Name: 
-// Module Name:    memory 
+// Module Name:    multiplier 
 // Project Name: 
 // Target Devices: 
 // Tool versions: 
@@ -18,8 +18,8 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module memory(
+module multiplier(
     );
-    
+
 
 endmodule
