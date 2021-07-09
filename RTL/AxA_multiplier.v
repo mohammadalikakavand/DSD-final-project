@@ -48,7 +48,7 @@ output_C22 );
                  input_B12, 
                  input_B21, 
                  input_B22;
-
+                 
     input input_Stable;
     output reg output_AB_Ack;
 
@@ -93,7 +93,7 @@ output_C22 );
               calculating = 2'd1,
               done = 2'd2;
     
-    always @ ( posedge input_Clk or posedge input_Reset) begin
+    always @ (posedge input_Clk or posedge input_Reset) begin
       if (input_Reset) begin
         output_C11 <= 0;
         output_C12 <= 0;
