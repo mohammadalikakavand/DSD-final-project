@@ -249,12 +249,21 @@ output_C22,
                     .result_ack(1),
                     .Result(temp_C22),
                     .result_ready(C22_Stable));
+                    if(C11_Stable && C12_Stable && C21_Stable && C22_Stable) begin
+                      output_C11 <= temp_C11;
+                      output_C12 <= temp_C12;
+                      output_C21 <= temp_C21;
+                      output_C22 <= temp_C22;
+                      state <= done;
+                    end
               end
             end
             done: begin
-              
+              output_Stable <= 1;
+              if(input_C_Ack)
+                state <= waiting;
             end
-      end
+      endcase
     end
 
 endmodule
