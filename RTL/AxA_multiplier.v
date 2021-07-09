@@ -37,7 +37,9 @@ output_Stable,
 output_C11,
 output_C12,
 output_C21,
-output_C22 );
+output_C22,
+A22_B22_Result,
+temp_C22 );
 
     input [31:0] input_A11,
                  input_A12, 
@@ -52,7 +54,11 @@ output_C22 );
     input input_Stable;
     output reg output_AB_Ack;
 
-    output reg [31:0] output_C11, output_C12, output_C21, output_C22;
+    output reg [31:0] output_C11, 
+                      output_C12, 
+                      output_C21, 
+                      output_C22;
+
     output reg output_Stable;
     input input_C_Ack;
 
@@ -61,13 +67,27 @@ output_C22 );
     input input_Start;
 
     wire A11_B11_Stable,
-        A12_B21_Stable,
-        A11_B12_Stable,
-        A12_B22_Stable,
-        A21_B11_Stable,
-        A22_B21_Stable,
-        A21_B12_Stable,
-        A22_B22_Stable;
+         A12_B21_Stable,
+         A11_B12_Stable,
+         A12_B22_Stable,
+         A21_B11_Stable,
+         A22_B21_Stable,
+         A21_B12_Stable,
+         A22_B22_Stable;
+
+    reg  A11_B11_Ack,
+         A12_B21_Ack,
+         A11_B12_Ack,
+         A12_B22_Ack,
+         A21_B11_Ack,
+         A22_B21_Ack,
+         A21_B12_Ack,
+         A22_B22_Ack;
+
+    reg  C11_Ack,
+         C12_Ack,
+         C21_Ack,
+         C22_Ack;
 
     wire [31:0] A11_B11_Result,
                 A12_B21_Result,
@@ -75,13 +95,13 @@ output_C22 );
                 A12_B22_Result,
                 A21_B11_Result,
                 A22_B21_Result,
-                A21_B12_Result,
-                A22_B22_Result;
+                A21_B12_Result;
+        output [31:0]        A22_B22_Result;
     
     wire [31:0] temp_C11,
                 temp_C12,
-                temp_C21,
-                temp_C22;
+                temp_C21;
+    output [31:0]            temp_C22;
     
     wire C11_Stable,
          C12_Stable,
@@ -89,18 +109,30 @@ output_C22 );
          C22_Stable;
 
     reg [1:0] state;
-    parameter waiting = 2'd0,
-              calculating = 2'd1,
-              done = 2'd2;
+    parameter waiting = 2'b00,
+              calculating = 2'b01,
+              done = 2'b10;
     
-    always @ (posedge input_Clk or posedge input_Reset) begin
-      if (input_Reset) begin
+    always @ (posedge input_Clk, negedge input_Reset) begin
+      if (!input_Reset) begin
         output_C11 <= 0;
         output_C12 <= 0;
         output_C21 <= 0;
         output_C22 <= 0;
         output_AB_Ack <= 0;
         output_Stable <= 0;
+        A11_B11_Ack <= 0;
+        A12_B21_Ack <= 0;
+        A11_B12_Ack <= 0;
+        A12_B22_Ack <= 0;
+        A21_B11_Ack <= 0;
+        A22_B21_Ack <= 0;
+        A21_B12_Ack <= 0;
+        A22_B22_Ack <= 0;
+        C11_Ack <= 0;
+        C12_Ack <= 0;
+        C21_Ack <= 0;
+        C22_Ack <= 0;
         state <= waiting;
       end
       else begin
@@ -117,15 +149,41 @@ output_C22 );
                   output_C12 <= temp_C12;
                   output_C21 <= temp_C21;
                   output_C22 <= temp_C22;
+                  A11_B11_Ack <= 1;
+                  A12_B21_Ack <= 1;
+                  A11_B12_Ack <= 1;
+                  A12_B22_Ack <= 1;
+                  A21_B11_Ack <= 1;
+                  A22_B21_Ack <= 1;
+                  A21_B12_Ack <= 1;
+                  A22_B22_Ack <= 1;
+                  C11_Ack <= 1;
+                  C12_Ack <= 1;
+                  C21_Ack <= 1;
+                  C22_Ack <= 1;
                   state <= done;
                 end
             end
             done: begin
               output_Stable <= 1;
-                if(input_C_Ack)
-                    state <= waiting;
+                if(input_C_Ack) begin
+                    A11_B11_Ack <= 0;
+                    A12_B21_Ack <= 0;
+                    A11_B12_Ack <= 0;
+                    A12_B22_Ack <= 0;
+                    A21_B11_Ack <= 0;
+                    A22_B21_Ack <= 0;
+                    A21_B12_Ack <= 0;
+                    A22_B22_Ack <= 0;
+                    C11_Ack <= 0;
+                    C12_Ack <= 0;
+                    C21_Ack <= 0;
+                    C22_Ack <= 0;
+                   state <= waiting;
                 end
-      endcase
+                   
+            end
+        endcase
       end
     end
     single_multiplier mult_A11_B11 (
@@ -133,7 +191,7 @@ output_C22 );
         .input_b(input_B11),
         .input_a_stb(input_Stable),
         .input_b_stb(input_Stable),
-        .output_z_ack(1'b1),
+        .output_z_ack(A11_B11_Ack),
         .clk(input_Clk),
         .rst(input_Reset),
         .output_z(A11_B11_Result),
@@ -146,7 +204,7 @@ output_C22 );
         .input_b(input_B21),
         .input_a_stb(input_Stable),
         .input_b_stb(input_Stable),
-        .output_z_ack(1'b1),
+        .output_z_ack(A12_B21_Ack),
         .clk(input_Clk),
         .rst(input_Reset),
         .output_z(A12_B21_Result),
@@ -159,7 +217,7 @@ output_C22 );
         .input_b(input_B12),
         .input_a_stb(input_Stable),
         .input_b_stb(input_Stable),
-        .output_z_ack(1'b1),
+        .output_z_ack(A11_B12_Ack),
         .clk(input_Clk),
         .rst(input_Reset),
         .output_z(A11_B12_Result),
@@ -172,7 +230,7 @@ output_C22 );
         .input_b(input_B22),
         .input_a_stb(input_Stable),
         .input_b_stb(input_Stable),
-        .output_z_ack(1'b1),
+        .output_z_ack(A12_B22_Ack),
         .clk(input_Clk),
         .rst(input_Reset),
         .output_z(A12_B22_Result),
@@ -185,7 +243,7 @@ output_C22 );
         .input_b(input_B11),
         .input_a_stb(input_Stable),
         .input_b_stb(input_Stable),
-        .output_z_ack(1'b1),
+        .output_z_ack(A21_B11_Ack),
         .clk(input_Clk),
         .rst(input_Reset),
         .output_z(A21_B11_Result),
@@ -198,7 +256,7 @@ output_C22 );
         .input_b(input_B21),
         .input_a_stb(input_Stable),
         .input_b_stb(input_Stable),
-        .output_z_ack(1'b1),
+        .output_z_ack(A22_B21_Ack),
         .clk(input_Clk),
         .rst(input_Reset),
         .output_z(A22_B21_Result),
@@ -211,7 +269,7 @@ output_C22 );
         .input_b(input_B12),
         .input_a_stb(input_Stable),
         .input_b_stb(input_Stable),
-        .output_z_ack(1'b1),
+        .output_z_ack(A21_B12_Ack),
         .clk(input_Clk),
         .rst(input_Reset),
         .output_z(A21_B12_Result),
@@ -224,7 +282,7 @@ output_C22 );
         .input_b(input_B22),
         .input_a_stb(input_Stable),
         .input_b_stb(input_Stable),
-        .output_z_ack(1'b1),
+        .output_z_ack(A22_B22_Ack),
         .clk(input_Clk),
         .rst(input_Reset),
         .output_z(A22_B22_Result),
@@ -238,7 +296,7 @@ output_C22 );
         .load(A11_B11_Stable && A12_B21_Stable),
         .Number1(A11_B11_Result), 
         .Number2(A12_B21_Result), 
-        .result_ack(1'b1),
+        .result_ack(C11_Ack),
         .Result(temp_C11),
         .result_ready(C11_Stable));
 
@@ -248,7 +306,7 @@ output_C22 );
         .load(A11_B12_Stable && A12_B22_Stable),
         .Number1(A11_B12_Result), 
         .Number2(A12_B22_Result), 
-        .result_ack(1'b1),
+        .result_ack(C12_Ack),
         .Result(temp_C12),
         .result_ready(C12_Stable));
 
@@ -258,7 +316,7 @@ output_C22 );
         .load(A21_B11_Stable && A22_B21_Stable),
         .Number1(A21_B11_Result), 
         .Number2(A22_B21_Result), 
-        .result_ack(1'b1),
+        .result_ack(C21_Ack),
         .Result(temp_C21),
         .result_ready(C21_Stable));
 
@@ -268,7 +326,7 @@ output_C22 );
         .load(A21_B12_Stable && A22_B22_Stable),
         .Number1(A21_B12_Result), 
         .Number2(A22_B22_Result), 
-        .result_ack(1'b1),
+        .result_ack(C22_Ack),
         .Result(temp_C22),
         .result_ready(C22_Stable));
 
