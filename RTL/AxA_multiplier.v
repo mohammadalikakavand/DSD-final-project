@@ -19,26 +19,26 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module AxA_multiplier( 
-input_Clk,
-input_Reset,
-input_Start,
-input_Stable,
-input_C_Ack,
-input_A11,
-input_A12,
-input_A21,
-input_A22,
-input_B11,
-input_B12,
-input_B21,
-input_B22,
-output_AB_Ack,
-output_Stable,
-output_C11,
-output_C12,
-output_C21,
-output_C22,
- );
+    input_Clk,
+    input_Reset,
+    input_Start,
+    input_Stable,
+    input_C_Ack,
+    input_A11,
+    input_A12,
+    input_A21,
+    input_A22,
+    input_B11,
+    input_B12,
+    input_B21,
+    input_B22,
+    output_AB_Ack,
+    output_Stable,
+    output_C11,
+    output_C12,
+    output_C21,
+    output_C22,
+    );
 
     input [31:0] input_A11, input_A12, input_A21, input_A22;
     input [31:0] input_B11, input_B12, input_B21, input_B22;
@@ -86,7 +86,7 @@ output_C22,
               calculating = 2'd1;
               done = 2'd2;
     
-    always @ ( posedge input_Clk or posedge input_Reset) begin
+    always @ (posedge input_Clk or posedge input_Reset) begin
       if (input_Reset) begin
         output_C11 <= 0;
         output_C12 <= 0;
