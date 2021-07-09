@@ -38,6 +38,17 @@ module multiplier
     reg [(DATA_WIDTH-1):0] data_a_upRight, data_a_upLeft, data_a_downRight, data_a_downLeft;
     reg [(DATA_WIDTH-1):0] data_b_upRight, data_b_upLeft, data_b_downRight, data_b_downLeft;
 
+    reg [(DATA_WIDTH-1):0] data_1_first_upRight, data_1_first_upLeft, data_1_first_downRight, data_1_first_downLeft;
+    reg [(DATA_WIDTH-1):0] data_1_second_upRight, data_1_second_upLeft, data_1_second_downRight, data_1_second_downLeft;
+
+    reg [(DATA_WIDTH-1):0] data_2_first_upRight, data_2_first_upLeft, data_2_first_downRight, data_2_first_downLeft;
+    reg [(DATA_WIDTH-1):0] data_2_second_upRight, data_2_second_upLeft, data_2_second_downRight, data_2_second_downLeft;
+
+    reg [(DATA_WIDTH-1):0] data_3_first_upRight, data_3_first_upLeft, data_3_first_downRight, data_3_first_downLeft;
+    reg [(DATA_WIDTH-1):0] data_3_second_upRight, data_3_second_upLeft, data_3_second_downRight, data_3_second_downLeft;
+
+    wire is_mul1_ready, is_mul2_ready, is_mul3_ready;
+
     reg [2:0] state;
    
     parameter S_RESET = 3'b000;
@@ -47,6 +58,8 @@ module multiplier
     parameter S_WAIT_FOR_RESAULT = 3'b100;
     parameter S_WRITE_RESAULT = 3'b101;
     parameter S_FINISH = 3'b110;
+
+    reg [1:0] item_index;
 
     always @ (posedge clk, negedge reset)
     begin
@@ -62,6 +75,7 @@ module multiplier
                 calculating_row <= 0;
                 calculating_column <= 0;
                 calculating_index <= 0;
+                state <= S_READY_NEW_ELEMENT;
             end
 
             S_READY_NEW_ELEMENT: begin
@@ -69,21 +83,135 @@ module multiplier
                 calculating_index <= 0;
                 addr_a <= //////
                 addr_b <= //////
+                item_index <= 2'b00;
+                state <= S_GET_FROM_MEMORY;
             end
 
             S_GET_FROM_MEMORY: begin
-                
+                if (item_index == 2'b00) begin
+                    data_a_upLeft <= data_a;
+                    data_b_upLeft <= data_b;
+                    addr_a <= ////
+                    addr_b <= ////
+                    item_index <= 2'b01;
+                    state <= S_GET_FROM_MEMORY;
+                end
+                else if (item_index == 2'b01) begin
+                    data_a_upRight <= data_a;
+                    data_b_upRight <= data_b;
+                    addr_a <= ////
+                    addr_b <= ////
+                    item_index <= 2'b10;
+                    state <= S_GET_FROM_MEMORY;
+
+                end
+                else if (item_index == 2'b10) begin
+                    data_a_downLeft <= data_a;
+                    data_b_downLeft <= data_b;
+                    addr_a <= ////
+                    addr_b <= ////
+                    item_index <= 2'b11;
+                    state <= S_GET_FROM_MEMORY;
+                end
+                else if (item_index == 2'b11) begin
+                    data_a_downRight <= data_a;
+                    data_b_downRight <= data_b;
+                    addr_a <= ////
+                    addr_b <= ////
+                    item_index <= 2'b00;
+                    state <= S_SEND_TO_MUL;
+                end
             end
 
             S_SEND_TO_MUL: begin
-
+                if (is_mul1_ready) begin
+                    data_1_first_upLeft <= data_a_upLeft;
+                    data_1_first_upRight <= data_a_upRight;
+                    data_1_first_downLeft <= data_a_downLeft;
+                    data_1_first_downRight <= data_a_downRight;
+                    data_1_second_upLeft <= data_b_upLeft;
+                    data_1_second_upRight <= data_b_upRight;
+                    data_1_second_downLeft <= data_b_downLeft;
+                    data_1_second_downRight <= data_b_downRight;
+                    state <= S_WAIT_FOR_RESAULT;
+                end
+                else if (is_mul2_ready) begin
+                    data_2_first_upLeft <= data_a_upLeft;
+                    data_2_first_upRight <= data_a_upRight;
+                    data_2_first_downLeft <= data_a_downLeft;
+                    data_2_first_downRight <= data_a_downRight;
+                    data_2_second_upLeft <= data_b_upLeft;
+                    data_2_second_upRight <= data_b_upRight;
+                    data_2_second_downLeft <= data_b_downLeft;
+                    data_2_second_downRight <= data_b_downRight;
+                    state <= S_WAIT_FOR_RESAULT;
+                end
+                else if (is_mul3_ready) begin
+                    data_3_first_upLeft <= data_a_upLeft;
+                    data_3_first_upRight <= data_a_upRight;
+                    data_3_first_downLeft <= data_a_downLeft;
+                    data_3_first_downRight <= data_a_downRight;
+                    data_3_second_upLeft <= data_b_upLeft;
+                    data_3_second_upRight <= data_b_upRight;
+                    data_3_second_downLeft <= data_b_downLeft;
+                    data_3_second_downRight <= data_b_downRight;
+                    state <= S_WAIT_FOR_RESAULT;
+                end
+                else begin
+                    state <=S_SEND_TO_MUL
+                end
             end
 
             S_WAIT_FOR_RESAULT: begin
+                if (calculating_index < (MIDDLE_LEN-2)) begin
+                    calculating_index <= calculating_index + 2;
+                    addr_a <= //////
+                    addr_b <= //////
+                    item_index <= 2'b00;
+                    state <= S_GET_FROM_MEMORY;
+                end
 
+                else begin
+                    if () begin  //// result of adder is ready
+                        state <= S_WRITE_RESAULT;
+                        /*
+                        addr_a <=
+                        addr_b <=
+                        we_a <=
+                        we_b <=
+                        q_a <= 
+                        q_b <= 
+                        */
+
+                    end 
+                    else
+                        state <= S_WAIT_FOR_RESAULT;
+                    end
+                end
             end
 
             S_WRITE_RESAULT: begin
+                /*
+                addr_a <=
+                addr_b <=
+                we_a <=
+                we_b <=
+                q_a <= 
+                q_b <= 
+                */
+
+                if (calculating_column < (SECOND_COLUMNS - 2)) begin
+                    calculating_column <= calculating_column + 2;
+                    state <= S_READY_NEW_ELEMENT;
+                end 
+                else if(calculating_row < (FIRST_ROWS - 2)) begin
+                    calculating_row <= calculating_row + 2;
+                    state <= S_READY_NEW_ELEMENT;
+                end
+
+                else begin
+                    state <= S_FINISH;
+                end
 
             end
 
