@@ -22,26 +22,34 @@ module multiplier
     #(parameter DATA_WIDTH=32,
       parameter ADDR_WIDTH=12, // memory address length
       parameter MAX_LEN = 100; // matrices maximum dimensions
-      parameter MAX_LEN_LOG = $clog2(MAX_LEN);
+      parameter MAX_LEN_LOG = 7)
 (
-    input [(DATA_WIDTH-1):0] data_a, data_b,        //connected to memory ports
-	output reg [(ADDR_WIDTH-1):0] addr_a, addr_b,   //connected to memory ports
-	output reg we_a, we_b, clk, result_ready,       //connected to memory ports
+    input [(DATA_WIDTH-1):0] data_a, data_b,        // connected to memory ports
+	output reg [(ADDR_WIDTH-1):0] addr_a, addr_b,   // connected to memory ports
+	output reg we_a, we_b, clk, result_ready,
     input reset,
-	output reg [(DATA_WIDTH-1):0] q_a, q_b
+	output reg [(DATA_WIDTH-1):0] q_a, q_b          // write data in memory
 );
 
-    reg [(MAX_LEN_LOG-1):0] FIRST_ROWS, SECOND_COLUMNS, MIDDLE_LEN;
+    reg [(MAX_LEN_LOG-1):0] FIRST_ROWS, SECOND_COLUMNS, MIDDLE_LEN; //matrices dimentions
 
-    reg [(MAX_LEN_LOG-1):0] calculating_row, calculating_column, calculating_index;
+    reg [(MAX_LEN_LOG-1):0] calculating_row, calculating_column, calculating_index; //first index of target product
 
+    // first 2x2 matrix values
     reg [(DATA_WIDTH-1):0] data_a_upRight, data_a_upLeft, data_a_downRight, data_a_downLeft;
+    // second 2x2 marix values
     reg [(DATA_WIDTH-1):0] data_b_upRight, data_b_upLeft, data_b_downRight, data_b_downLeft;
+    // first multiplier first operand
     reg [(DATA_WIDTH-1):0] data_1_first_upRight, data_1_first_upLeft, data_1_first_downRight, data_1_first_downLeft;
+    //first multiplier second operand
     reg [(DATA_WIDTH-1):0] data_1_second_upRight, data_1_second_upLeft, data_1_second_downRight, data_1_second_downLeft;
+    // second multiplier first operand
     reg [(DATA_WIDTH-1):0] data_2_first_upRight, data_2_first_upLeft, data_2_first_downRight, data_2_first_downLeft;
+    // second multiplier second operand
     reg [(DATA_WIDTH-1):0] data_2_second_upRight, data_2_second_upLeft, data_2_second_downRight, data_2_second_downLeft;
+   // third multiplier first operand
     reg [(DATA_WIDTH-1):0] data_3_first_upRight, data_3_first_upLeft, data_3_first_downRight, data_3_first_downLeft;
+    // third multiplier second operand
     reg [(DATA_WIDTH-1):0] data_3_second_upRight, data_3_second_upLeft, data_3_second_downRight, data_3_second_downLeft;
 
     wire is_mul1_ready, is_mul2_ready, is_mul3_ready;
@@ -56,8 +64,9 @@ module multiplier
     parameter S_WRITE_RESULT = 3'b101;
     parameter S_FINISH = 3'b110;
 
-    reg [1:0] item_index;
-
+    reg [1:0] item_index; // index of fetching in 2x2 matrix
+    
+    // address of 2x2 matrices
     reg [(ADDR_WIDTH-1):0] address_first_square, address_second_square, address_result_square, address_second_matrix;
 
     always @ (posedge clk, negedge reset)
