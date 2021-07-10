@@ -19,17 +19,17 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module multiplier
-#(parameter DATA_WIDTH=32, parameter ADDR_WIDTH=12)
+    #(parameter DATA_WIDTH=32,
+      parameter ADDR_WIDTH=12, // memory address length
+      parameter MAX_LEN = 100; // matrices maximum dimensions
+      parameter MAX_LEN_LOG = $clog2(MAX_LEN);
 (
-    input [(DATA_WIDTH-1):0] data_a, data_b,
-	output reg [(ADDR_WIDTH-1):0] addr_a, addr_b,
-	output reg we_a, we_b, clk, result_ready,
+    input [(DATA_WIDTH-1):0] data_a, data_b,        //connected to memory ports
+	output reg [(ADDR_WIDTH-1):0] addr_a, addr_b,   //connected to memory ports
+	output reg we_a, we_b, clk, result_ready,       //connected to memory ports
     input reset,
 	output reg [(DATA_WIDTH-1):0] q_a, q_b
 );
-
-    parameter MAX_LEN = 100;
-    parameter MAX_LEN_LOG = 8;      ///// log(MAX_LEN)
 
     reg [(MAX_LEN_LOG-1):0] FIRST_ROWS, SECOND_COLUMNS, MIDDLE_LEN;
 
@@ -52,8 +52,8 @@ module multiplier
     parameter S_READY_NEW_ELEMENT = 3'b001;
     parameter S_GET_FROM_MEMORY = 3'b010;
     parameter S_SEND_TO_MUL = 3'b011;
-    parameter S_WAIT_FOR_RESAULT = 3'b100;
-    parameter S_WRITE_RESAULT = 3'b101;
+    parameter S_WAIT_FOR_RESULT = 3'b100;
+    parameter S_WRITE_RESULT = 3'b101;
     parameter S_FINISH = 3'b110;
 
     reg [1:0] item_index;
@@ -64,13 +64,13 @@ module multiplier
     begin
         if (~reset) begin
             stage <= S_RESET;
-            addr_a <= {(ADDR_WIDTH-1){1'b0}, 1'b1}; ///// get size of matrixes
+            addr_a <= {(ADDR_WIDTH-1){1'b0}, 1'b1}; // get size of matrices
         end
         else begin
             case (state)
 
             S_RESET: begin
-                ///// find size of matrixes from data_a and set them
+                ///// find size of matrices from data_a and set them
                 calculating_row <= 0;
                 calculating_column <= 0;
                 calculating_index <= 0;
@@ -146,7 +146,7 @@ module multiplier
                     data_1_second_upRight <= data_b_upRight;
                     data_1_second_downLeft <= data_b_downLeft;
                     data_1_second_downRight <= data_b_downRight;
-                    state <= S_WAIT_FOR_RESAULT;
+                    state <= S_WAIT_FOR_RESULT;
                 end
                 else if (is_mul2_ready) begin
                     data_2_first_upLeft <= data_a_upLeft;
@@ -157,7 +157,7 @@ module multiplier
                     data_2_second_upRight <= data_b_upRight;
                     data_2_second_downLeft <= data_b_downLeft;
                     data_2_second_downRight <= data_b_downRight;
-                    state <= S_WAIT_FOR_RESAULT;
+                    state <= S_WAIT_FOR_RESULT;
                 end
                 else if (is_mul3_ready) begin
                     data_3_first_upLeft <= data_a_upLeft;
@@ -168,14 +168,14 @@ module multiplier
                     data_3_second_upRight <= data_b_upRight;
                     data_3_second_downLeft <= data_b_downLeft;
                     data_3_second_downRight <= data_b_downRight;
-                    state <= S_WAIT_FOR_RESAULT;
+                    state <= S_WAIT_FOR_RESULT;
                 end
                 else begin
                     state <=S_SEND_TO_MUL
                 end
             end
 
-            S_WAIT_FOR_RESAULT: begin
+            S_WAIT_FOR_RESU: begin
                 if (calculating_index < (MIDDLE_LEN-2)) begin
                     calculating_index <= calculating_index + 2;
                     address_first_square <= address_first_square - MIDDLE_LEN + 2;
@@ -187,29 +187,30 @@ module multiplier
 
                 else begin
                     if () begin  //// result of adder is ready
-                        state <= S_WRITE_RESAULT;
+                        state <= S_WRITE_RESULT;
                         addr_a <= address_result_square;
                         addr_b <= address_result_square + 1;
                         address_result_square <= address_result_square + SECOND_COLUMNS;
                         we_a <= 1'b1;
                         we_b <= 1'b1;
-                        q_a <= ///// up left of resault
-                        q_b <= ///// up right of resault
+                        q_a <= ///// up left of result
+                        q_b <= ///// up right of result
 
                     end 
                     else
-                        state <= S_WAIT_FOR_RESAULT;
+                        state <= S_WAIT_FOR_RESULT
+;
                     end
                 end
             end
 
-            S_WRITE_RESAULT: begin
+            S_WRITE_RESULT: begin
                 addr_a <= address_result_square;
                 addr_b <= address_result_square + 1;
                 we_a <= 1'b1;
                 we_b <= 1'b1;
-                q_a <=  ///// down left of resault
-                q_b <=  ///// down right of resault
+                q_a <=  ///// down left of result
+                q_b <=  ///// down right of result
 
                 if (calculating_column < (SECOND_COLUMNS - 2)) begin
                     calculating_column <= calculating_column + 2;
