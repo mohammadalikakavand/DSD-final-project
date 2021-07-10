@@ -76,12 +76,12 @@ module AxA_adder_test;
 		input_B21 = 0;
 		input_B22 = 0;
 		input_Clk = 0;
-		input_Reset = 1;
+		input_Reset = 0;
 		input_Start = 0;
 		input_C_Ack = 0;
 
 		#13
-		input_Reset = 0;
+		input_Reset = 1;
 		input_Start = 1;
 
 		input_A11 = 32'b01000010111110100000000000000000; //125
