@@ -175,7 +175,7 @@ module multiplier
                 end
             end
 
-            S_WAIT_FOR_RESU: begin
+            S_WAIT_FOR_RESULT: begin
                 if (calculating_index < (MIDDLE_LEN-2)) begin
                     calculating_index <= calculating_index + 2;
                     address_first_square <= address_first_square - MIDDLE_LEN + 2;
