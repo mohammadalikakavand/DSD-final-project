@@ -27,7 +27,6 @@ module AxA_multiplier_test;
 	// Inputs
 	reg input_Clk;
 	reg input_Reset;
-	reg input_Start;
 	reg input_Stable;
 	reg input_C_Ack;
 	reg [31:0] input_A11;
@@ -46,14 +45,12 @@ module AxA_multiplier_test;
 	wire [31:0] output_C12;
 	wire [31:0] output_C21;
 	wire [31:0] output_C22;
-	wire [31:0] A22_B22_Result;
-	wire [31:0] temp_C22;
+
 
 	// Instantiate the Unit Under Test (UUT)
 	AxA_multiplier uut (
 		.input_Clk(input_Clk), 
 		.input_Reset(input_Reset), 
-		.input_Start(input_Start), 
 		.input_Stable(input_Stable), 
 		.input_C_Ack(input_C_Ack), 
 		.input_A11(input_A11), 
@@ -69,16 +66,12 @@ module AxA_multiplier_test;
 		.output_C11(output_C11), 
 		.output_C12(output_C12), 
 		.output_C21(output_C21), 
-		.output_C22(output_C22), 
-		.A22_B22_Result(A22_B22_Result), 
-		.temp_C22(temp_C22)
-	);
+		.output_C22(output_C22));
 
 	initial begin
 		// Initialize Inputs
 		input_Clk = 0;
 		input_Reset = 0;
-		input_Start = 0;
 		input_Stable = 0;
 		input_C_Ack = 0;
 		input_A11 = 0;

@@ -36,9 +36,7 @@ output_Stable,
 output_C11,
 output_C12,
 output_C21,
-output_C22,
-A22_B22_Result,
-temp_C22 );
+output_C22 );
 
     input [31:0] input_A11,
                  input_A12, 
@@ -93,13 +91,13 @@ temp_C22 );
                 A12_B22_Result,
                 A21_B11_Result,
                 A22_B21_Result,
-                A21_B12_Result;
-        output [31:0]        A22_B22_Result;
+                A21_B12_Result,
+                A22_B22_Result;
     
     wire [31:0] temp_C11,
                 temp_C12,
-                temp_C21;
-    output [31:0]            temp_C22;
+                temp_C21,
+                temp_C22;
     
     wire C11_Stable,
          C12_Stable,
