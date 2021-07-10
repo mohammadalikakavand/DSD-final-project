@@ -62,10 +62,10 @@ module single_multiplier_test;
 		input_b_stb = 0;
 		output_z_ack = 0;
 		clk = 0;
-		rst = 0;
+		rst = 1;
 		
 		#13
-		rst = 1;
+		rst = 0;
 		input_a = 32'b01000001010001001100110011001101; //12.3
 		input_b = 32'b01000001011001011000010100011111; //14.345
 		input_a_stb = 1;
