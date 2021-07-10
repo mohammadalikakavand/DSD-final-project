@@ -55,6 +55,7 @@ module multiplier
     wire is_mul1_ready, is_mul2_ready, is_mul3_ready;
 
     reg [2:0] state;
+    reg [2:0] next_state;
    
     parameter S_RESET = 3'b000;
     parameter S_READY_NEW_ELEMENT = 3'b001;
@@ -63,20 +64,25 @@ module multiplier
     parameter S_WAIT_FOR_RESULT = 3'b100;
     parameter S_WRITE_RESULT = 3'b101;
     parameter S_FINISH = 3'b110;
+    parameter S_HELP = 3'b111;
 
-    reg [1:0] item_index; // index of fetching in 2x2 matrix
-    
-    // address of 2x2 matrices
+    reg [2:0] item_index;
+
     reg [(ADDR_WIDTH-1):0] address_first_square, address_second_square, address_result_square, address_second_matrix;
 
     always @ (posedge clk, negedge reset)
     begin
         if (~reset) begin
-            stage <= S_RESET;
-            addr_a <= {(ADDR_WIDTH-1){1'b0}, 1'b1}; // get size of matrices
+            state <= S_HELP;
+            next_state <= S_RESET;
+            addr_a <= {(ADDR_WIDTH-1){1'b0}, 1'b1}; ///// get size of matrixes
         end
         else begin
             case (state)
+
+            S_HELP: begin
+                state <= next_state;
+            end
 
             S_RESET: begin
                 ///// find size of matrices from data_a and set them
@@ -101,46 +107,50 @@ module multiplier
                 address_first_square <= address_first_square + 1;
                 addr_b <= address_second_square;
                 address_second_square <= address_second_square + 1;
-                item_index <= 2'b00;
+                item_index <= 3'b000;
                 state <= S_GET_FROM_MEMORY;
                 we_a <= 1'b0;
                 we_b <= 1'b0;
             end
 
             S_GET_FROM_MEMORY: begin
-                if (item_index == 2'b00) begin
-                    data_a_upLeft <= data_a;
-                    data_b_upLeft <= data_b;
+                if (item_index == 3'b000) begin
                     addr_a <= address_first_square;
                     address_first_square <= address_first_square + MIDDLE_LEN - 1;
                     addr_b <= address_second_square;
                     address_second_square <= address_second_square + SECOND_COLUMNS - 1;
-                    item_index <= 2'b01;
+                    item_index <= 3'b001;
                     state <= S_GET_FROM_MEMORY;
                 end
-                else if (item_index == 2'b01) begin
-                    data_a_upRight <= data_a;
-                    data_b_upRight <= data_b;
+                else if (item_index == 3'b001) begin
+                    data_a_upLeft <= data_a;
+                    data_b_upLeft <= data_b;
                     addr_a <= address_first_square;
                     address_first_square <= address_first_square + 1;
                     addr_b <= address_second_square;
                     address_second_square <= address_second_square + 1;
-                    item_index <= 2'b10;
+                    item_index <= 3'b010;
                     state <= S_GET_FROM_MEMORY;
 
                 end
-                else if (item_index == 2'b10) begin
-                    data_a_downLeft <= data_a;
-                    data_b_downLeft <= data_b;
+                else if (item_index == 3'b010) begin
+                    data_a_upRight <= data_a;
+                    data_b_upRight <= data_b;
                     addr_a <= address_first_square;
                     addr_b <= address_second_square;
-                    item_index <= 2'b11;
+                    item_index <= 3'b011;
                     state <= S_GET_FROM_MEMORY;
                 end
-                else if (item_index == 2'b11) begin
+                else if (item_index == 3'b011) begin
+                    data_a_downLeft <= data_a;
+                    data_b_downLeft <= data_b;
+                    item_index <= 3'b100;
+                    state <= S_GET_FROM_MEMORY;
+                end
+                else begin
                     data_a_downRight <= data_a;
                     data_b_downRight <= data_b;
-                    item_index <= 2'b00;
+                    item_index <= 3'b000;
                     state <= S_SEND_TO_MUL;
                 end
             end
@@ -207,8 +217,7 @@ module multiplier
 
                     end 
                     else
-                        state <= S_WAIT_FOR_RESULT
-;
+                        state <= S_WAIT_FOR_RESULT;
                     end
                 end
             end
