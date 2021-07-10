@@ -21,7 +21,6 @@
 module AxA_multiplier( 
 input_Clk,
 input_Reset,
-input_Start,
 input_Stable,
 input_C_Ack,
 input_A11,
@@ -64,7 +63,6 @@ temp_C22 );
 
     input input_Clk;
     input input_Reset;
-    input input_Start;
 
     wire A11_B11_Stable,
          A12_B21_Stable,
@@ -140,7 +138,7 @@ temp_C22 );
             waiting: begin
                 output_AB_Ack <= 0;
                 output_Stable <= 0;
-                if (input_Start) state <= calculating;
+                if (input_Stable) state <= calculating;
             end
             calculating: begin
               output_AB_Ack <= 1;
