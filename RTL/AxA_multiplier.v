@@ -36,8 +36,7 @@ output_Stable,
 output_C11,
 output_C12,
 output_C21,
-output_C22 );
-
+output_C22);
     input [31:0] input_A11,
                  input_A12, 
                  input_A21, 
@@ -134,35 +133,14 @@ output_C22 );
       else begin
         case(state)
             waiting: begin
+                output_C11 <= 0;
+                output_C12 <= 0;
+                output_C21 <= 0;
+                output_C22 <= 0;
                 output_AB_Ack <= 0;
                 output_Stable <= 0;
-                if (input_Stable) state <= calculating;
-            end
-            calculating: begin
-              output_AB_Ack <= 1;
-                if(C11_Stable && C12_Stable && C21_Stable && C22_Stable) begin
-                  output_C11 <= temp_C11;
-                  output_C12 <= temp_C12;
-                  output_C21 <= temp_C21;
-                  output_C22 <= temp_C22;
-                  A11_B11_Ack <= 1;
-                  A12_B21_Ack <= 1;
-                  A11_B12_Ack <= 1;
-                  A12_B22_Ack <= 1;
-                  A21_B11_Ack <= 1;
-                  A22_B21_Ack <= 1;
-                  A21_B12_Ack <= 1;
-                  A22_B22_Ack <= 1;
-                  C11_Ack <= 1;
-                  C12_Ack <= 1;
-                  C21_Ack <= 1;
-                  C22_Ack <= 1;
-                  state <= done;
-                end
-            end
-            done: begin
-              output_Stable <= 1;
-                if(input_C_Ack) begin
+                if (input_Stable) begin
+                    state <= calculating;
                     A11_B11_Ack <= 0;
                     A12_B21_Ack <= 0;
                     A11_B12_Ack <= 0;
@@ -175,7 +153,34 @@ output_C22 );
                     C12_Ack <= 0;
                     C21_Ack <= 0;
                     C22_Ack <= 0;
-                   state <= waiting;
+                end 
+            end
+            calculating: begin
+              output_AB_Ack <= 1;
+                if(C11_Stable && C12_Stable && C21_Stable && C22_Stable) begin
+                  output_C11 <= temp_C11;
+                  output_C12 <= temp_C12;
+                  output_C21 <= temp_C21;
+                  output_C22 <= temp_C22;
+                  state <= done;
+                end
+            end
+            done: begin
+                output_Stable <= 1;
+                if(input_C_Ack) begin
+                    A11_B11_Ack <= 1;
+                    A12_B21_Ack <= 1;
+                    A11_B12_Ack <= 1;
+                    A12_B22_Ack <= 1;
+                    A21_B11_Ack <= 1;
+                    A22_B21_Ack <= 1;
+                    A21_B12_Ack <= 1;
+                    A22_B22_Ack <= 1;
+                    C11_Ack <= 1;
+                    C12_Ack <= 1;
+                    C21_Ack <= 1;
+                    C22_Ack <= 1;
+                    state <= waiting;
                 end
                    
             end
