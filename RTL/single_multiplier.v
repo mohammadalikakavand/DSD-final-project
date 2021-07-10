@@ -263,6 +263,8 @@ module single_multiplier(
           if (s_output_z_stb && output_z_ack) begin
             s_output_z_stb <= 0;
             state <= get_a;
+             s_input_a_ack <= 0;
+             s_input_b_ack <= 0;
           end
         end
 
