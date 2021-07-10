@@ -353,6 +353,9 @@ module multiplier
     always @(posedge clk)
     begin
         if (add_mul_state == 1'b0) begin
+            mul1_C_Ack <= 1'b0;
+            mul2_C_Ack <= 1'b0;
+            mul3_C_Ack <= 1'b0;
             add_mul_state <= 1'b1;
         end
         else if () begin // adder is bikar
@@ -362,7 +365,7 @@ module multiplier
                 adder_in_downLeft <= data_1_result_downLeft;
                 adder_in_downRight <= data_1_result_downRight;
                 add_mul_state <= 1'b0;
-                
+                mul1_C_Ack <= 1'b1;
                 ////
             end
             else if (mul2_finish) begin
@@ -371,6 +374,7 @@ module multiplier
                 adder_in_downLeft <= data_2_result_downLeft;
                 adder_in_downRight <= data_2_result_downRight;
                 add_mul_state <= 1'b0;
+                mul2_C_Ack <= 1'b1;
 
                 /////
             else
@@ -381,6 +385,7 @@ module multiplier
                 adder_in_downLeft <= data_3_result_downLeft;
                 adder_in_downRight <= data_3_result_downRight;
                 add_mul_state <= 1'b0;
+                mul3_C_Ack <= 1'b1;
 
                 /////
             else
