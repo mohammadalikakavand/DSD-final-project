@@ -26,7 +26,7 @@ module multiplier
 (
     input [(DATA_WIDTH-1):0] data_a, data_b,        // connected to memory ports
 	output reg [(ADDR_WIDTH-1):0] addr_a, addr_b,   // connected to memory ports
-	output reg we_a, we_b, clk, result_ready,
+	output reg we_a, we_b, clk, result_ready, is_working,
     input reset,
 	output reg [(DATA_WIDTH-1):0] q_a, q_b          // write data in memory
 );
@@ -34,6 +34,23 @@ module multiplier
     reg [(MAX_LEN_LOG-1):0] FIRST_ROWS, SECOND_COLUMNS, MIDDLE_LEN; //matrices dimentions
 
     reg [(MAX_LEN_LOG-1):0] calculating_row, calculating_column, calculating_index; //first index of target product
+
+
+    reg [(MAX_LEN_LOG-1):0] sum_number_calculating_element;
+    reg [(DATA_WIDTH-1):0] adder_in_upRight, adder_in_upLeft, adder_in_downRight, adder_in_downLeft;
+    wire [(DATA_WIDTH-1):0] adder_out_upRight, adder_out_upLeft, adder_out_downRight, adder_out_downLeft;
+    wire is_adder_free, is_adder_out_ready;
+    reg add_mul_state, start_add, reset_adder;
+
+    wire [(DATA_WIDTH-1):0] data_1_result_upRight, data_1_result_upLeft, data_1_result_downRight, data_1_result_downLeft;
+    wire [(DATA_WIDTH-1):0] data_2_result_upRight, data_2_result_upLeft, data_2_result_downRight, data_2_result_downLeft;
+    wire [(DATA_WIDTH-1):0] data_3_result_upRight, data_3_result_upLeft, data_3_result_downRight, data_3_result_downLeft;
+
+    reg mul1_start, mul2_start, mul3_start;
+    reg mul1_C_Ack, mul2_C_Ack, mul3_C_Ack;
+
+    wire mul1_finish, mul2_finish, mul3_finish;
+    wire mul1_AB_Ack, mul2_AB_Ack, mul3_AB_Ack;
 
     // first 2x2 matrix values
     reg [(DATA_WIDTH-1):0] data_a_upRight, data_a_upLeft, data_a_downRight, data_a_downLeft;
@@ -64,7 +81,7 @@ module multiplier
     parameter S_WAIT_FOR_RESULT = 3'b100;
     parameter S_WRITE_RESULT = 3'b101;
     parameter S_FINISH = 3'b110;
-    parameter S_HELP = 3'b111;
+    parameter S_WAITING = 3'b111;
 
     reg [2:0] item_index;
 
@@ -73,35 +90,58 @@ module multiplier
     always @ (posedge clk, negedge reset)
     begin
         if (~reset) begin
-            state <= S_HELP;
+            state <= S_WAITING;
             next_state <= S_RESET;
-            addr_a <= {(ADDR_WIDTH-1){1'b0}, 1'b1}; ///// get size of matrixes
+            is_working <= 1'b0;
+            result_ready <= 1'b0;
+            add_mul_state <= 1'b0;
+            addr_a <= 0;
+            reset_adder <= 1'b0;
         end
         else begin
             case (state)
 
-            S_HELP: begin
+            S_WAITING: begin
                 state <= next_state;
+                we_a <= 1'b0;
+                we_b <= 1'b0;
             end
 
             S_RESET: begin
-                ///// find size of matrices from data_a and set them
-                calculating_row <= 0;
-                calculating_column <= 0;
-                calculating_index <= 0;
-                state <= S_READY_NEW_ELEMENT;
-                we_b <= 1'b0;
-                we_a <= 1'b0;
-                address_first_square <= 2;
-                //*
-                address_second_square <= 
-                address_result_square <=
-                address_second_matrix <=
-                *//
+                if (~is_working) begin
+                    if (data_a[31] == 1'b1) begin
+                        addr_a <= 1;
+                        result_ready <= 1'b0;
+                        is_working <= 1'b1;
+                        state <= S_WAITING;
+                        next_state <= S_RESET;
+                    end
+                    else begin
+                        state <= S_RESET;
+                        addr_a <= 0;
+                    end
+                end
+                else begin
+                    FIRST_ROWS <= q_a[31:24];
+                    MIDDLE_LEN <= q_a[23:16];
+                    SECOND_COLUMNS <= q_a[7:0];
+                    sum_number_calculating_element <= ((q_a[23:16] + 1'b1) >> 1);
+                    calculating_row <= 0;
+                    calculating_column <= 0;
+                    calculating_index <= 0;
+                    state <= S_READY_NEW_ELEMENT;
+                    we_b <= 1'b0;
+                    we_a <= 1'b0;
+                    address_first_square <= 2;
+                    address_second_square <= ((q_a[31:24] * q_a[23:16]) + 2);
+                    address_result_square <= ((q_a[31:24] * q_a[23:16]) + (q_a[23:16] * q_a[7:0]) + 2);
+                    address_second_matrix <= ((q_a[31:24] * q_a[23:16]) + 2);
+                end
+
             end
 
             S_READY_NEW_ELEMENT: begin
-                ////// ready adder to get new numbers
+                reset_adder <= 1'b0;
                 calculating_index <= 0;
                 addr_a <= address_first_square;
                 address_first_square <= address_first_square + 1;
@@ -114,6 +154,7 @@ module multiplier
             end
 
             S_GET_FROM_MEMORY: begin
+                reset_adder <= 1'b1;
                 if (item_index == 3'b000) begin
                     addr_a <= address_first_square;
                     address_first_square <= address_first_square + MIDDLE_LEN - 1;
@@ -212,15 +253,15 @@ module multiplier
                 end
 
                 else begin
-                    if () begin  //// result of adder is ready
+                    if (is_adder_out_ready) begin  //// result of adder is ready
                         state <= S_WRITE_RESULT;
                         addr_a <= address_result_square;
                         addr_b <= address_result_square + 1;
                         address_result_square <= address_result_square + SECOND_COLUMNS;
                         we_a <= 1'b1;
                         we_b <= 1'b1;
-                        q_a <= adder_out_upLeft ///// up left of result
-                        q_b <= adder_out_upRight ///// up right of result
+                        q_a <= adder_out_upLeft
+                        q_b <= adder_out_upRight
 
                     end 
                     else
@@ -234,8 +275,8 @@ module multiplier
                 addr_b <= address_result_square + 1;
                 we_a <= 1'b1;
                 we_b <= 1'b1;
-                q_a <= adder_out_downLeft  ///// down left of result
-                q_b <= adder_out_downRight  ///// down right of result
+                q_a <= adder_out_downLeft
+                q_b <= adder_out_downRight
 
                 if (calculating_column < (SECOND_COLUMNS - 2)) begin
                     calculating_column <= calculating_column + 2;
@@ -251,7 +292,6 @@ module multiplier
                     address_result_square <= address_result_square + 2;
                     state <= S_READY_NEW_ELEMENT;
                 end
-
                 else begin
                     state <= S_FINISH;
                 end
@@ -259,26 +299,19 @@ module multiplier
             end
 
             S_FINISH: begin
-                we_a <= 1'b0;
-                we_b <= 1'b0;
-                ///////
+                we_a <= 1'b1;
+                we_b <= 1'b1;
+                addr_a <= 0;
+                q_a <= 1;
+                result_ready <= 1'b1;
+                is_working <= 1'b0;
+                next_state <= S_RESET;
+                state <= S_WAITING;
             end
-
 
             endcase
         end
     end
-
-    wire [(DATA_WIDTH-1):0] data_1_result_upRight, data_1_result_upLeft, data_1_result_downRight, data_1_result_downLeft;
-    wire [(DATA_WIDTH-1):0] data_2_result_upRight, data_2_result_upLeft, data_2_result_downRight, data_2_result_downLeft;
-    wire [(DATA_WIDTH-1):0] data_3_result_upRight, data_3_result_upLeft, data_3_result_downRight, data_3_result_downLeft;
-
-    reg mul1_start, mul2_start, mul3_start;
-    reg mul1_C_Ack, mul2_C_Ack, mul3_C_Ack;
-
-    wire mul1_finish, mul2_finish, mul3_finish;
-    wire mul1_AB_Ack, mul2_AB_Ack, mul3_AB_Ack;
-
 
     AxA_multiplier first_AxA_multiplier (
         .input_Clk(clk),
@@ -298,7 +331,8 @@ module multiplier
         .output_C11(data_1_result_upLeft),
         .output_C12(data_1_result_upRight),
         .output_C21(data_1_result_downLeft),
-        .output_C22(data_1_result_downRight)
+        .output_C22(data_1_result_downRight),
+        .output_Free(is_mul1_ready)
     );
 
     AxA_multiplier second_AxA_multiplier (
@@ -319,7 +353,8 @@ module multiplier
         .output_C11(data_2_result_upLeft),
         .output_C12(data_2_result_upRight),
         .output_C21(data_2_result_downLeft),
-        .output_C22(data_2_result_downRight)
+        .output_C22(data_2_result_downRight),
+        .output_Free(is_mul2_ready)
     );
     
     AxA_multiplier third_AxA_multiplier (
@@ -340,15 +375,26 @@ module multiplier
         .output_C11(data_3_result_upLeft),
         .output_C12(data_3_result_upRight),
         .output_C21(data_3_result_downLeft),
-        .output_C22(data_3_result_downRight)
+        .output_C22(data_3_result_downRight),
+        .output_Free(is_mul3_ready)
     );
 
-    reg [(DATA_WIDTH-1):0] adder_in_upRight, adder_in_upLeft, adder_in_downRight, adder_in_downLeft;
-
-    wire [(DATA_WIDTH-1):0] adder_out_upRight, adder_out_upLeft, adder_out_downRight, adder_out_downLeft;
-
-
-    reg add_mul_state;
+    AxA_adder adder (
+        .input_A11(adder_in_upLeft),
+        .input_A12(adder_in_upRight),
+        .input_A21(adder_in_downLeft),
+        .input_A22(adder_in_downRight),
+        .input_Clk(clk),
+        .input_Reset(reset_adder),
+        .input_Start(start_add),
+        .output_free(is_adder_free),
+        .output_Stable(is_adder_out_ready),
+        .output_C11_sum(adder_out_upLeft),
+        .output_C12_sum(adder_out_upRight),
+        .output_C21_sum(adder_out_downLeft),
+        .output_C22_sum(adder_out_downRight)
+        .sum_number(sum_number_calculating_element)
+    );
 
     always @(posedge clk)
     begin
@@ -357,16 +403,17 @@ module multiplier
             mul2_C_Ack <= 1'b0;
             mul3_C_Ack <= 1'b0;
             add_mul_state <= 1'b1;
+            start_add <= 1'b0;
         end
-        else if () begin // adder is bikar
+        else if (is_adder_free) begin
             if (mul1_finish) begin
                 adder_in_upLeft <= data_1_result_upLeft;
                 adder_in_upRight <= data_1_result_upRight;
                 adder_in_downLeft <= data_1_result_downLeft;
                 adder_in_downRight <= data_1_result_downRight;
                 add_mul_state <= 1'b0;
+                start_add <= 1'b1;
                 mul1_C_Ack <= 1'b1;
-                ////
             end
             else if (mul2_finish) begin
                 adder_in_upLeft <= data_2_result_upLeft;
@@ -374,21 +421,18 @@ module multiplier
                 adder_in_downLeft <= data_2_result_downLeft;
                 adder_in_downRight <= data_2_result_downRight;
                 add_mul_state <= 1'b0;
+                start_add <= 1'b1;
                 mul2_C_Ack <= 1'b1;
-
-                /////
-            else
-
+            end
             else if (mul3_finish) begin
                 adder_in_upLeft <= data_3_result_upLeft;
                 adder_in_upRight <= data_3_result_upRight;
                 adder_in_downLeft <= data_3_result_downLeft;
                 adder_in_downRight <= data_3_result_downRight;
                 add_mul_state <= 1'b0;
+                start_add <= 1'b1;
                 mul3_C_Ack <= 1'b1;
-
-                /////
-            else
+            end
         end
     end
     
