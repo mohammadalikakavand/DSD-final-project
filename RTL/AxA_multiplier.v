@@ -36,7 +36,8 @@ output_Stable,
 output_C11,
 output_C12,
 output_C21,
-output_C22);
+output_C22,
+output_Free);
     input [31:0] input_A11,
                  input_A12, 
                  input_A21, 
@@ -56,6 +57,7 @@ output_C22);
                       output_C22;
 
     output reg output_Stable;
+    output reg output_Free;
     input input_C_Ack;
 
     input input_Clk;
@@ -128,6 +130,7 @@ output_C22);
         C12_Ack <= 0;
         C21_Ack <= 0;
         C22_Ack <= 0;
+        output_Free <= 1;
         state <= waiting;
       end
       else begin
@@ -141,6 +144,7 @@ output_C22);
                 output_Stable <= 0;
                 if (input_Stable) begin
                     state <= calculating;
+                    output_Free <= 0;
                     A11_B11_Ack <= 0;
                     A12_B21_Ack <= 0;
                     A11_B12_Ack <= 0;
@@ -168,6 +172,7 @@ output_C22);
             done: begin
                 output_Stable <= 1;
                 if(input_C_Ack) begin
+                    output_Free <= 1;
                     A11_B11_Ack <= 1;
                     A12_B21_Ack <= 1;
                     A11_B12_Ack <= 1;

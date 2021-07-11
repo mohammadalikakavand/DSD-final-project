@@ -45,6 +45,7 @@ module AxA_multiplier_test;
 	wire [31:0] output_C12;
 	wire [31:0] output_C21;
 	wire [31:0] output_C22;
+	wire output_Free;
 
 
 
@@ -67,7 +68,8 @@ module AxA_multiplier_test;
 		.output_C11(output_C11), 
 		.output_C12(output_C12), 
 		.output_C21(output_C21), 
-		.output_C22(output_C22));
+		.output_C22(output_C22),
+		.output_Free(output_Free));
 
 	initial begin
 		// Initialize Inputs
