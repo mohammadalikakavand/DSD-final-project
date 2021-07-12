@@ -292,7 +292,12 @@ module multiplier
                         addr_b <= address_result_square + 1;
                         address_result_square <= address_result_square + SECOND_COLUMNS;
                         we_a <= 1'b1;
-                        we_b <= 1'b1;
+                        if (calculating_column == (SECOND_COLUMNS - 1)) begin
+                            we_b <= 1'b0;
+                        end
+                        else begin
+                            we_b <= 1'b1;
+                        end
                         q_a <= adder_out_upLeft
                         q_b <= adder_out_upRight
 
@@ -306,23 +311,34 @@ module multiplier
             S_WRITE_RESULT: begin
                 addr_a <= address_result_square;
                 addr_b <= address_result_square + 1;
+                if (calculating_row == (FIRST_ROWS - 1)) begin
+                    we_a <= 1'b0;
+                end
+                else begin
+                    we_a <= 1'b1;
+                end
                 we_a <= 1'b1;
-                we_b <= 1'b1;
+                if ( (calculating_column == (SECOND_COLUMNS - 1)) || (calculating_row == (FIRST_ROWS - 1)) ) begin
+                    we_b <= 1'b0;
+                end
+                else begin
+                    we_b <= 1'b1;
+                end
                 q_a <= adder_out_downLeft
                 q_b <= adder_out_downRight
 
                 if (calculating_column < (SECOND_COLUMNS - 2)) begin
                     calculating_column <= calculating_column + 2;
-                    address_first_square <= address_first_square - (MIDDLE_LEN + MIDDLE_LEN) + 1;
+                    address_first_square <= address_first_square - (MIDDLE_LEN + MIDDLE_LEN) + (MIDDLE_LEN - calculating_index - 1);
                     address_second_square <= address_second_matrix + calculating_column + 2;
                     address_result_square <= address_result_square - SECOND_COLUMNS + 2;
                     state <= S_READY_NEW_ELEMENT;
                 end 
                 else if(calculating_row < (FIRST_ROWS - 2)) begin
                     calculating_row <= calculating_row + 2;
-                    address_first_square <= address_first_square + 1;
+                    address_first_square <= address_first_square + (MIDDLE_LEN - calculating_index - 1);
                     address_second_square <= address_second_matrix + calculating_column;
-                    address_result_square <= address_result_square + 2;
+                    address_result_square <= address_result_square + (SECOND_COLUMNS - calculating_column);
                     state <= S_READY_NEW_ELEMENT;
                 end
                 else begin
