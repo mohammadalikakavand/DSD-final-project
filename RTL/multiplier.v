@@ -83,6 +83,9 @@ module multiplier
     parameter S_FINISH = 3'b110;
     parameter S_WAITING = 3'b111;
 
+    parameter ADDRESS_SECOND_MATRIX = 1026;
+    parameter ADDRESS_RESULT_MATRIX = 2050;
+
     reg [2:0] item_index;
 
     reg [(ADDR_WIDTH-1):0] address_first_square, address_second_square, address_result_square, address_second_matrix;
@@ -133,9 +136,9 @@ module multiplier
                     we_b <= 1'b0;
                     we_a <= 1'b0;
                     address_first_square <= 2;
-                    address_second_square <= ((q_a[31:24] * q_a[23:16]) + 2);
-                    address_result_square <= ((q_a[31:24] * q_a[23:16]) + (q_a[23:16] * q_a[7:0]) + 2);
-                    address_second_matrix <= ((q_a[31:24] * q_a[23:16]) + 2);
+                    address_second_square <= ADDRESS_SECOND_MATRIX;
+                    address_result_square <= ADDRESS_RESULT_MATRIX;
+                    address_second_matrix <= ADDRESS_SECOND_MATRIX;
                 end
 
             end
@@ -175,22 +178,52 @@ module multiplier
 
                 end
                 else if (item_index == 3'b010) begin
-                    data_a_upRight <= data_a;
-                    data_b_upRight <= data_b;
+                    if(calculating_index == (MIDDLE_LEN - 1)) begin
+                        data_a_upRight <= 0;
+                    end
+                    else begin
+                        data_a_upRight <= data_a;
+                    end
+                    if(calculating_column == (SECOND_COLUMNS - 1)) begin
+                        data_b_upRight <= 0;
+                    end
+                    else begin
+                        data_b_upRight <= data_b;
+                    end
                     addr_a <= address_first_square;
                     addr_b <= address_second_square;
                     item_index <= 3'b011;
                     state <= S_GET_FROM_MEMORY;
                 end
                 else if (item_index == 3'b011) begin
-                    data_a_downLeft <= data_a;
-                    data_b_downLeft <= data_b;
+                    if(calculating_row == (FIRST_ROWS-1)) begin
+                        data_a_downLeft <= 0;
+                    end
+                    else begin
+                        data_a_downLeft <= data_a;
+                    end
+                    if(calculating_index == (MIDDLE_LEN - 1)) begin
+                        data_b_downLeft <= 0;
+                    end
+                    else begin
+                        data_b_downLeft <= data_b;
+                    end
                     item_index <= 3'b100;
                     state <= S_GET_FROM_MEMORY;
                 end
                 else begin
-                    data_a_downRight <= data_a;
-                    data_b_downRight <= data_b;
+                    if((calculating_row == (FIRST_ROWS-1)) || (calculating_index == (MIDDLE_LEN - 1))) begin
+                        data_a_downRight <= 0;
+                    end
+                    else begin
+                        data_a_downRight <= data_a;
+                    end
+                    if((calculating_index == (MIDDLE_LEN - 1)) || (calculating_column == (SECOND_COLUMNS - 1)) ) begin
+                        data_b_downRight <= 0;
+                    end
+                    else begin
+                        data_b_downRight <= data_b;
+                    end
                     item_index <= 3'b000;
                     state <= S_SEND_TO_MUL;
                 end
