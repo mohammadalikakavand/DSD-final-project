@@ -21,7 +21,7 @@
 module multiplier
     #(parameter DATA_WIDTH=32,
       parameter ADDR_WIDTH=12, // memory address length
-      parameter MAX_LEN = 100; // matrices maximum dimensions
+      parameter MAX_LEN = 100, // matrices maximum dimensions
       parameter MAX_LEN_LOG = 7)
 (
     input [(DATA_WIDTH-1):0] data_a, data_b,        // connected to memory ports
@@ -267,7 +267,7 @@ module multiplier
                     state <= S_WAIT_FOR_RESULT;
                 end
                 else begin
-                    state <=S_SEND_TO_MUL
+                    state <=S_SEND_TO_MUL;
                 end
             end
 
@@ -298,11 +298,11 @@ module multiplier
                         else begin
                             we_b <= 1'b1;
                         end
-                        q_a <= adder_out_upLeft
-                        q_b <= adder_out_upRight
+                        q_a <= adder_out_upLeft;
+                        q_b <= adder_out_upRight;
 
                     end 
-                    else
+                    else begin
                         state <= S_WAIT_FOR_RESULT;
                     end
                 end
@@ -324,8 +324,8 @@ module multiplier
                 else begin
                     we_b <= 1'b1;
                 end
-                q_a <= adder_out_downLeft
-                q_b <= adder_out_downRight
+                q_a <= adder_out_downLeft;
+                q_b <= adder_out_downRight;
 
                 if (calculating_column < (SECOND_COLUMNS - 2)) begin
                     calculating_column <= calculating_column + 2;
@@ -441,7 +441,7 @@ module multiplier
         .output_C11_sum(adder_out_upLeft),
         .output_C12_sum(adder_out_upRight),
         .output_C21_sum(adder_out_downLeft),
-        .output_C22_sum(adder_out_downRight)
+        .output_C22_sum(adder_out_downRight),
         .sum_number(sum_number_calculating_element)
     );
 
