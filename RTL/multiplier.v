@@ -26,8 +26,8 @@ module multiplier
 (
     input [(DATA_WIDTH-1):0] data_a, data_b,        // connected to memory ports
 	output reg [(ADDR_WIDTH-1):0] addr_a, addr_b,   // connected to memory ports
-	output reg we_a, we_b, clk, result_ready, is_working,
-    input reset,
+	output reg we_a, we_b, result_ready, is_working,
+    input reset, clk,
 	output reg [(DATA_WIDTH-1):0] q_a, q_b          // write data in memory
 );
 
@@ -97,7 +97,6 @@ module multiplier
             next_state <= S_RESET;
             is_working <= 1'b0;
             result_ready <= 1'b0;
-            add_mul_state <= 1'b0;
             addr_a <= 0;
             reset_adder <= 1'b0;
         end
@@ -445,45 +444,48 @@ module multiplier
         .sum_number(sum_number_calculating_element)
     );
 
-    always @(posedge clk)
-    begin
-        if (add_mul_state == 1'b0) begin
-            mul1_C_Ack <= 1'b0;
-            mul2_C_Ack <= 1'b0;
-            mul3_C_Ack <= 1'b0;
-            add_mul_state <= 1'b1;
-            start_add <= 1'b0;
+    always @(posedge clk or negedge reset) begin
+        if(!reset) begin
+            add_mul_state <= 1'b0;
         end
-        else if (is_adder_free) begin
-            if (mul1_finish) begin
-                adder_in_upLeft <= data_1_result_upLeft;
-                adder_in_upRight <= data_1_result_upRight;
-                adder_in_downLeft <= data_1_result_downLeft;
-                adder_in_downRight <= data_1_result_downRight;
-                add_mul_state <= 1'b0;
-                start_add <= 1'b1;
-                mul1_C_Ack <= 1'b1;
+        else begin
+            if (add_mul_state == 1'b0) begin
+                mul1_C_Ack <= 1'b0;
+                mul2_C_Ack <= 1'b0;
+                mul3_C_Ack <= 1'b0;
+                add_mul_state <= 1'b1;
+                start_add <= 1'b0;
             end
-            else if (mul2_finish) begin
-                adder_in_upLeft <= data_2_result_upLeft;
-                adder_in_upRight <= data_2_result_upRight;
-                adder_in_downLeft <= data_2_result_downLeft;
-                adder_in_downRight <= data_2_result_downRight;
-                add_mul_state <= 1'b0;
-                start_add <= 1'b1;
-                mul2_C_Ack <= 1'b1;
-            end
-            else if (mul3_finish) begin
-                adder_in_upLeft <= data_3_result_upLeft;
-                adder_in_upRight <= data_3_result_upRight;
-                adder_in_downLeft <= data_3_result_downLeft;
-                adder_in_downRight <= data_3_result_downRight;
-                add_mul_state <= 1'b0;
-                start_add <= 1'b1;
-                mul3_C_Ack <= 1'b1;
+            else if (is_adder_free) begin
+                if (mul1_finish) begin
+                    adder_in_upLeft <= data_1_result_upLeft;
+                    adder_in_upRight <= data_1_result_upRight;
+                    adder_in_downLeft <= data_1_result_downLeft;
+                    adder_in_downRight <= data_1_result_downRight;
+                    add_mul_state <= 1'b0;
+                    start_add <= 1'b1;
+                    mul1_C_Ack <= 1'b1;
+                end
+                else if (mul2_finish) begin
+                    adder_in_upLeft <= data_2_result_upLeft;
+                    adder_in_upRight <= data_2_result_upRight;
+                    adder_in_downLeft <= data_2_result_downLeft;
+                    adder_in_downRight <= data_2_result_downRight;
+                    add_mul_state <= 1'b0;
+                    start_add <= 1'b1;
+                    mul2_C_Ack <= 1'b1;
+                end
+                else if (mul3_finish) begin
+                    adder_in_upLeft <= data_3_result_upLeft;
+                    adder_in_upRight <= data_3_result_upRight;
+                    adder_in_downLeft <= data_3_result_downLeft;
+                    adder_in_downRight <= data_3_result_downRight;
+                    add_mul_state <= 1'b0;
+                    start_add <= 1'b1;
+                    mul3_C_Ack <= 1'b1;
+                end
             end
         end
     end
-    
 
 endmodule
