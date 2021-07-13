@@ -29,8 +29,9 @@ module matrix_multiplier
 	input write_enable,
     input reset,
     input clk,
+
 	output [(DATA_WIDTH-1):0] memory_data_out,
-    output result_ready
+    output wire result_ready
     );
 
     wire data_a, data_b, addr_a, addr_b, we_a, we_b, is_working;
