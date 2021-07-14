@@ -124,10 +124,10 @@ module multiplier
                     end
                 end
                 else begin
-                    FIRST_ROWS <= q_a[31:24];
-                    MIDDLE_LEN <= q_a[23:16];
-                    SECOND_COLUMNS <= q_a[7:0];
-                    sum_number_calculating_element <= ((q_a[23:16] + 1'b1) >> 1);
+                    FIRST_ROWS <= data_a[31:24];
+                    MIDDLE_LEN <= data_a[23:16];
+                    SECOND_COLUMNS <= data_a[7:0];
+                    sum_number_calculating_element <= ((data_a[23:16] + 1'b1) >> 1);
                     calculating_row <= 0;
                     calculating_column <= 0;
                     calculating_index <= 0;
