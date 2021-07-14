@@ -35,19 +35,18 @@ module single_multiplier(
   reg       s_input_b_ack;
 
   reg       [3:0] state;
-  parameter get_a         = 4'd0,
-            get_b         = 4'd1,
-            unpack        = 4'd2,
-            special_cases = 4'd3,
-            normalise_a   = 4'd4,
-            normalise_b   = 4'd5,
-            multiply_0    = 4'd6,
-            multiply_1    = 4'd7,
-            normalise_1   = 4'd8,
-            normalise_2   = 4'd9,
-            round         = 4'd10,
-            pack          = 4'd11,
-            put_z         = 4'd12;
+  parameter get_input    = 4'd0,
+            unpack        = 4'd1,
+            special_cases = 4'd2,
+            normalise_a   = 4'd3,
+            normalise_b   = 4'd4,
+            multiply_0    = 4'd5,
+            multiply_1    = 4'd6,
+            normalise_1   = 4'd7,
+            normalise_2   = 4'd8,
+            round         = 4'd9,
+            pack          = 4'd10,
+            put_z         = 4'd11;
 
   reg       [31:0] a, b, z;
   reg       [23:0] a_m, b_m, z_m;
@@ -61,7 +60,7 @@ module single_multiplier(
 
     if (!rst)
     begin
-      state <= get_a;
+      state <= get_input;
       s_input_a_ack <= 0;
       s_input_b_ack <= 0;
       s_output_z_stb <= 0;
@@ -70,21 +69,14 @@ module single_multiplier(
     begin
       case(state)
 
-        get_a:
+        get_input:
         begin
           s_input_a_ack <= 1;
-          if (s_input_a_ack && input_a_stb) begin
+          s_input_b_ack <= 1;
+          if (s_input_a_ack && input_a_stb & s_input_b_ack && input_b_stb) begin
             a <= input_a;
             s_input_a_ack <= 0;
-            state <= get_b;
-          end
-        end
-
-        get_b:
-        begin
-          s_input_b_ack <= 1;
-          if (s_input_b_ack && input_b_stb) begin
-            b <= input_b;
+             b <= input_b;
             s_input_b_ack <= 0;
             state <= unpack;
           end
@@ -262,7 +254,7 @@ module single_multiplier(
           s_output_z <= z;
           if (s_output_z_stb && output_z_ack) begin
             s_output_z_stb <= 0;
-            state <= get_a;
+            state <= get_input;
              s_input_a_ack <= 0;
              s_input_b_ack <= 0;
           end
