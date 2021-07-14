@@ -249,8 +249,76 @@ module matrix_multiplier_test;
 		#20
 		//set status >> START
 		write_enable   = 0;
-		#10000;
-		
+
+		#10000
+
+		#20
+		// get result matrix. index 1,1
+		memory_address = 12'd2050
+
+		#20
+		// get result matrix. index 1,2
+		memory_address = 12'd2051
+
+		#20
+		// get result matrix. index 1,3
+		memory_address = 12'd2052
+
+		#20
+		// get result matrix. index 1,4
+		memory_address = 12'd2053
+
+		#20
+		// get result matrix. index 2,1
+		memory_address = 12'd2054
+
+		#20
+		// get result matrix. index 2,2
+		memory_address = 12'd2055
+
+		#20
+		// get result matrix. index 2,3
+		memory_address = 12'd2056
+
+		#20
+		// get result matrix. index 2,4
+		memory_address = 12'd2057
+
+		#20
+		// get result matrix. index 3,1
+		memory_address = 12'd2058
+
+		#20
+		// get result matrix. index 3,2
+		memory_address = 12'd2059
+
+		#20
+		// get result matrix. index 3,3
+		memory_address = 12'd2060
+
+		#20
+		// get result matrix. index 3,4
+		memory_address = 12'd2061
+
+		#20
+		// get result matrix. index 4,1
+		memory_address = 12'd2062
+
+		#20
+		// get result matrix. index 4,2
+		memory_address = 12'd2063
+
+		#20
+		// get result matrix. index 4,3
+		memory_address = 12'd2064
+
+		#20
+		// get result matrix. index 4,4
+		memory_address = 12'd2065
+
+		#100;
+	
+
 
 	end
       
