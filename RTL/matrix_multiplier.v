@@ -42,7 +42,8 @@ module matrix_multiplier
     assign data_b = is_working? data_b_inner : memory_data_in;
     assign addr_b = is_working? addr_b_inner : memory_address;
     assign we_b = is_working? we_b_inner : write_enable;
-    assign q_b = is_working? q_b_inner : memory_data_out;
+    assign memory_data_out = is_working? {DATA_WIDTH{1'bz}} : q_b;
+    assign q_b_inner = is_working? q_b : {DATA_WIDTH{1'bz}};
 
     memory my_memory(
         .data_a(data_a),
@@ -59,8 +60,8 @@ module matrix_multiplier
 
 
     multiplier my_multiplier(
-        .data_a(data_a),
-        .data_b(data_b_inner),
+        .data_a(q_a),
+        .data_b(q_b_inner),
         .addr_a(addr_a),
         .addr_b(addr_b_inner),
         .we_a(we_a),
@@ -69,8 +70,8 @@ module matrix_multiplier
         .result_ready(result_ready),
         .is_working(is_working),
         .reset(reset),
-        .q_a(q_a),
-        .q_b(q_b_inner));
+        .q_a(data_a),
+        .q_b(data_b_inner));
         defparam my_multiplier.DATA_WIDTH = DATA_WIDTH;
         defparam my_multiplier.ADDR_WIDTH = ADDR_WIDTH;
         defparam my_multiplier.MAX_LEN = MAX_LEN;
