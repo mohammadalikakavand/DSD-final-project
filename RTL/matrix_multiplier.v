@@ -35,6 +35,7 @@ module matrix_multiplier
     );
 
     wire data_a, data_b, addr_a, addr_b, we_a, we_b, is_working;
+    wire data_b_inner, addr_b_inner, we_b_inner, q_b_inner;
     assign data_b = is_working? data_b_inner : memory_data_in;
     assign addr_b = is_working? addr_b_inner : memory_address;
     assign we_b = is_working? we_b_inner : write_enable;
